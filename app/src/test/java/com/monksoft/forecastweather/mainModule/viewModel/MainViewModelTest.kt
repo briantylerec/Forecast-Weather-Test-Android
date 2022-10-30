@@ -4,6 +4,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import com.monksoft.forecastweather.common.dataAccess.WeatherForecastService
 import com.monksoft.forecastweather.entities.WeatherForecastEntity
+import com.monksoft.forecastweather.mainModule.viewModel.common.dataAccess.JSONFileLoader
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.notNullValue
@@ -74,11 +75,23 @@ class MainViewModelTest {
     }
 
     @Test
-    fun checkHoutlySizeTest(){
+    fun checkHourlySizeTest(){
         runBlocking {
             mainViewModel.getWeatherAndForecast(19.4342, -99.1962, "2e7415bc983752b966ca6c3ef0b9bddb","metric", "en")
             val result = mainViewModel.getResult().getOrAwaitValue()
             assertThat(result.hourly.size, `is`(48))
+        }
+    }
+
+    @Test
+    fun `check hourly size remote with local test`(){
+        runBlocking {
+            val remoteResult = service.getWeatherForecastByCoordinates(19.4342, -99.1962, "2e7415bc983752b966ca6c3ef0b9bddb",
+                "metric", "en")
+
+            val localResult = JSONFileLoader().loadWeatherForecastEntity("weather_forecast_response_success")
+
+            assertThat(localResult?.hourly?.size, `is`(remoteResult.hourly.size))
         }
     }
 }
